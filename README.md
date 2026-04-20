@@ -236,4 +236,5 @@ All tunable parameters live in `firmware/include/config.h`:
 - The heating pad must be rated **5 V / ≤500 mA**.
 - The firmware cuts the heater off automatically after `HEATER_MAX_ON_MS` — a re-hug is required to re-enable it.
 - Place heat-resistant material between the heating pad and stuffing to prevent hot spots.
+- Temperature sensor detects MAX_SAFE_TEMP, if exceeded (48 celcius) heating pad shuts off. 
 - Never leave the bears unattended while charging.
