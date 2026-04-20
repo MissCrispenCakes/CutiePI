@@ -2,7 +2,12 @@
 
 Two stuffed animals connected over the air. Hug one and the other bear's LED pulses with a red heartbeat. Hug both at the same time and they warm up too — like sending a hug through the mail.
 
-Each bear contains an ESP32-S3, a force-sensitive resistor, a red LED, and a small heating pad. The two bears talk directly to each other over **ESP-NOW** (peer-to-peer WiFi, no router required).
+Each bear contains an ESP32-S3, a force-sensitive resistor, a red LED, and a small heating pad. Two builds are available depending on where the bears will live:
+
+| Build | How they talk | Range |
+|-------|--------------|-------|
+| `bear` (default) | ESP-NOW — direct peer-to-peer WiFi, no router | Same room / building |
+| `bear-mqtt` | MQTT over internet via a shared broker | Anywhere in the world |
 
 ---
 
@@ -15,7 +20,7 @@ Each bear contains an ESP32-S3, a force-sensitive resistor, a red LED, and a sma
 | Bear B only | Bear A's LED pulses a red heartbeat |
 | Both bears | Both LEDs pulse **and** both heating pads warm up |
 
-The firmware is identical on both bears — only `BEAR_ID` differs.
+The firmware is identical on both bears — only `BEAR_ID` and network credentials differ.
 
 ---
 
@@ -24,19 +29,19 @@ The firmware is identical on both bears — only `BEAR_ID` differs.
 ```
 CutiePI/
 ├── firmware/
-│   ├── platformio.ini        # PlatformIO project config (ESP32-S3, Arduino)
+│   ├── platformio.ini        # Two build environments: bear (ESP-NOW) and bear-mqtt (MQTT)
 │   ├── include/
-│   │   └── config.h          # All pins, thresholds, BPM, safety limits
+│   │   └── config.h          # All pins, thresholds, BPM, safety limits, WiFi/MQTT credentials
 │   ├── src/
 │   │   ├── main.cpp           # State machine + main loop
-│   │   ├── comms.{h,cpp}      # ESP-NOW peer-to-peer communication
+│   │   ├── comms.{h,cpp}      # ESP-NOW or MQTT — selected at build time
 │   │   ├── sensors.{h,cpp}    # Pressure sensor reading + debounce
 │   │   ├── heartbeat.{h,cpp}  # Lub-dub PWM LED animation
 │   │   └── actuators.{h,cpp}  # Heating pad control + safety cutoff
 │   └── fix/
 │       ├── README.md                  # When and how to use these variants
 │       ├── heartbeat_3x.cpp           # Arduino ESP32 3.x LEDC API
-│       ├── comms_3x.cpp               # Arduino ESP32 3.x ESP-NOW callback
+│       ├── comms_3x.cpp               # Arduino ESP32 3.x (ESP-NOW callback + full MQTT support)
 │       ├── actuators_usb_heater.cpp   # P-channel MOSFET for USB heating pad
 │       └── heartbeat_led_strip.cpp    # WS2812B addressable LED strip
 └── hardware/
@@ -69,16 +74,23 @@ Default pin assignments (change in `config.h`):
 
 ## Dependencies
 
-This project has **no external libraries**. Every API used ships inside the `espressif32` Arduino core:
+The ESP-NOW build (`bear`) has **no external libraries** — everything ships inside the `espressif32` Arduino core.
+
+The MQTT build (`bear-mqtt`) adds one library, downloaded automatically by PlatformIO:
+
+| Library | Version |
+|---------|---------|
+| `knolleary/PubSubClient` | ^2.8 |
+
+Both builds share the same core APIs:
 
 | Header | Source |
 |--------|--------|
 | `Arduino.h` | Arduino framework (bundled with platform) |
-| `esp_now.h` | ESP-IDF ESP-NOW driver (bundled with platform) |
 | `WiFi.h` | ESP32 Arduino WiFi library (bundled with platform) |
-| LEDC / ADC | ESP32 Arduino peripheral drivers (bundled with platform) |
+| LEDC / ADC / Touch | ESP32 Arduino peripheral drivers (bundled with platform) |
 
-The platform version is pinned in `platformio.ini`. PlatformIO downloads it once on the first `pio run`; all subsequent builds work **fully offline**.
+The platform version is pinned in `platformio.ini`. PlatformIO downloads everything once on the first `pio run`; all subsequent builds work **fully offline** (ESP-NOW build only — MQTT requires internet at runtime).
 
 ---
 
@@ -92,9 +104,13 @@ The platform version is pinned in `platformio.ini`. PlatformIO downloads it once
 - Two ESP32-S3 DevKitC-1 boards
 - Hardware assembled per `hardware/bom.md`
 
-### Step 1 — Discover MAC addresses
+---
 
-Each bear needs to know the other's WiFi MAC address. Flash both boards with the default config (MACs left as `0xFF`) and open the serial monitor at 115200 baud. On boot, each bear prints:
+### Option A — ESP-NOW (same location)
+
+#### Step 1 — Discover MAC addresses
+
+Flash both boards with the default config (MACs left as `0xFF`) and open the serial monitor at 115200 baud. Each bear prints its MAC on boot:
 
 ```
 This bear's MAC: AA:BB:CC:DD:EE:FF
@@ -102,35 +118,76 @@ This bear's MAC: AA:BB:CC:DD:EE:FF
 
 Note both addresses.
 
-### Step 2 — Configure each bear
+#### Step 2 — Configure each bear
 
 Open `firmware/include/config.h` and set:
 
 ```cpp
-// On Bear A (BEAR_ID 0): paste Bear B's MAC here
+// Bear A
 #define BEAR_ID 0
-static const uint8_t PEER_MAC[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+static const uint8_t PEER_MAC[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}; // Bear B's MAC
 ```
 
 ```cpp
-// On Bear B (BEAR_ID 1): paste Bear A's MAC here
+// Bear B
 #define BEAR_ID 1
-static const uint8_t PEER_MAC[6] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+static const uint8_t PEER_MAC[6] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66}; // Bear A's MAC
 ```
 
-### Step 3 — Build and flash
+#### Step 3 — Build and flash
 
 ```bash
 cd firmware
 
-# Flash Bear A (set BEAR_ID=0 in config.h first)
-pio run --target upload --upload-port /dev/ttyUSB0
+# Bear A
+pio run -e bear --target upload --upload-port /dev/ttyUSB0
 
-# Flash Bear B (set BEAR_ID=1 in config.h first)
-pio run --target upload --upload-port /dev/ttyUSB1
+# Bear B
+pio run -e bear --target upload --upload-port /dev/ttyUSB1
 ```
 
-Or use the PlatformIO sidebar in VS Code: **Build → Upload**.
+---
+
+### Option B — MQTT (long distance)
+
+#### Step 1 — Choose a broker
+
+For testing, the free public broker `broker.hivemq.com` requires no account. For a permanent setup, consider a private broker (self-hosted Mosquitto, HiveMQ Cloud free tier, etc.).
+
+#### Step 2 — Configure each bear
+
+Create a local credentials file from the example (this file is gitignored — safe to put real values in):
+
+```bash
+cp firmware/include/secrets.h.example firmware/include/secrets.h
+```
+
+Edit `secrets.h` with your network and broker details:
+
+```cpp
+#define WIFI_SSID     "your_network_name"
+#define WIFI_PASSWORD "your_network_password"
+#define MQTT_BROKER   "broker.hivemq.com"  // or your own broker
+#define MQTT_PORT     1883
+```
+
+Then set `BEAR_ID` in `firmware/include/config.h` (0 for Bear A, 1 for Bear B).
+
+Each bear automatically publishes to `cutiepie/BEAR_ID/hug` and subscribes to the other bear's topic — no manual topic configuration needed.
+
+#### Step 3 — Build and flash
+
+```bash
+cd firmware
+
+# Bear A
+pio run -e bear-mqtt --target upload --upload-port /dev/ttyUSB0
+
+# Bear B
+pio run -e bear-mqtt --target upload --upload-port /dev/ttyUSB1
+```
+
+---
 
 ### Step 4 — Test before assembly
 
@@ -152,6 +209,12 @@ All tunable parameters live in `firmware/include/config.h`:
 | `PRESSURE_DEBOUNCE_MS` | `200` | Milliseconds before a press/release is registered. |
 | `HEARTBEAT_BPM` | `70` | Speed of the LED heartbeat animation. |
 | `HEATER_MAX_ON_MS` | `300000` (5 min) | Hard safety cutoff for the heating pad. |
+
+---
+
+## Roadmap
+
+- **Captive portal setup** — on first boot (or when PEER_MAC is still placeholder), the bear starts a temporary WiFi access point. Connect on your phone and a simple webpage shows the MAC address, current config, and connection status. Eliminates the need to open a serial monitor during setup.
 
 ---
 

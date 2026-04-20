@@ -27,9 +27,12 @@ Not sure which you have? Run `pio pkg list` in the firmware directory and look f
 
 | | 2.x (`firmware/src/`) | 3.x (`firmware/fix/`) |
 |---|---|---|
-| Callback signature | `(const uint8_t *mac_addr, const uint8_t *data, int len)` | `(const esp_now_recv_info_t *info, const uint8_t *data, int len)` |
+| ESP-NOW callback | `(const uint8_t *mac_addr, ...)` | `(const esp_now_recv_info_t *info, ...)` |
+| `comms_update()` | `{}` no-op (ESP-NOW) / full impl (MQTT) | identical |
+| MQTT section | full `#ifdef USE_MQTT` block | identical — PubSubClient has no 3.x dependency |
 
-The callback body is identical — neither version uses the first parameter.
+The **only** difference between 2.x and 3.x comms is the ESP-NOW callback signature.
+The MQTT section and `comms_update()` are byte-for-byte identical across both versions.
 
 ---
 

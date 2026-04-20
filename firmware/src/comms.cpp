@@ -1,14 +1,108 @@
 #include "comms.h"
 #include "config.h"
-#include <esp_now.h>
 #include <WiFi.h>
+
+static void (*s_on_receive)(bool) = nullptr;
+
+// ─────────────────────────────────────────────────────────────────────────────
+#ifdef USE_MQTT
+// Long-distance mode: bears connect to a shared MQTT broker over the internet.
+// Configure WIFI_SSID, WIFI_PASSWORD, and MQTT_BROKER in config.h.
+// Build with: pio run -e bear-mqtt
+// ─────────────────────────────────────────────────────────────────────────────
+#include <PubSubClient.h>
+
+static WiFiClient   s_wifi_client;
+static PubSubClient s_mqtt(s_wifi_client);
+static char         s_pub_topic[32];   // cutiepie/BEAR_ID/hug
+static char         s_sub_topic[32];   // cutiepie/PEER_ID/hug
+static uint32_t     s_last_reconnect_ms = 0;
+
+static void mqtt_callback(char* topic, byte* payload, unsigned int len) {
+    (void)topic;
+    if (len < 1) return;
+    if (s_on_receive) s_on_receive(payload[0] == '1');
+}
+
+static void reconnect_mqtt() {
+    if (s_mqtt.connected()) return;
+    if (WiFi.status() != WL_CONNECTED) return;
+    // Throttle to one attempt every 5 s so a dead broker doesn't spam the log.
+    if (millis() - s_last_reconnect_ms < 5000) return;
+    s_last_reconnect_ms = millis();
+
+    // Unique client ID prevents broker rejecting a reconnect as a duplicate.
+    char client_id[32];
+    snprintf(client_id, sizeof(client_id), "cutiepie-%d-%lu", BEAR_ID, millis());
+
+    Serial.print("MQTT connecting...");
+    bool ok = (strlen(MQTT_USER) > 0)
+        ? s_mqtt.connect(client_id, MQTT_USER, MQTT_PASS)
+        : s_mqtt.connect(client_id);
+
+    if (ok) {
+        Serial.println(" connected");
+        s_mqtt.subscribe(s_sub_topic);
+    } else {
+        Serial.printf(" failed (rc=%d) — retrying in 5 s\n", s_mqtt.state());
+    }
+}
+
+void comms_init(void (*on_receive)(bool remote_is_hugged)) {
+    s_on_receive = on_receive;
+
+    snprintf(s_pub_topic, sizeof(s_pub_topic), "cutiepie/%d/hug", BEAR_ID);
+    snprintf(s_sub_topic, sizeof(s_sub_topic), "cutiepie/%d/hug", 1 - BEAR_ID);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    Serial.print("Connecting to WiFi");
+    unsigned long start = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
+        delay(250);
+        Serial.print(".");
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.printf(" connected (%s)\n", WiFi.localIP().toString().c_str());
+    } else {
+        Serial.println(" FAILED — check WIFI_SSID / WIFI_PASSWORD in config.h");
+    }
+
+    s_mqtt.setServer(MQTT_BROKER, MQTT_PORT);
+    s_mqtt.setCallback(mqtt_callback);
+    reconnect_mqtt();
+}
+
+void comms_send(bool is_hugged) {
+    if (!s_mqtt.connected()) {
+        Serial.println("comms_send skipped — MQTT not connected");
+        return;
+    }
+    // Retained message: a bear that comes online later will immediately get
+    // the current hug state without waiting for the next press/release.
+    bool ok = s_mqtt.publish(s_pub_topic, is_hugged ? "1" : "0", /*retain=*/true);
+    if (!ok) Serial.println("comms_send failed");
+}
+
+void comms_update() {
+    reconnect_mqtt();
+    s_mqtt.loop();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+#else
+// Local mode: bears talk directly over ESP-NOW (same room / building only).
+// No internet, no broker, no WiFi router required.
+// Build with: pio run -e bear   (default)
+// ─────────────────────────────────────────────────────────────────────────────
+#include <esp_now.h>
 
 struct BearMessage {
     uint8_t bear_id;
     bool    is_hugged;
 };
-
-static void (*s_on_receive)(bool) = nullptr;
 
 static void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int len) {
     (void)mac_addr;
@@ -48,3 +142,7 @@ void comms_send(bool is_hugged) {
         Serial.printf("comms_send failed: %s\n", esp_err_to_name(err));
     }
 }
+
+void comms_update() {} // no-op — ESP-NOW is interrupt-driven, no polling needed
+
+#endif

@@ -3,6 +3,9 @@
 .pioenvs/
 .piolibdeps/
 
+# Local credentials — never commit
+firmware/include/secrets.h
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

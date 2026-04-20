@@ -1,5 +1,9 @@
 # Bill of Materials — CutiePI Bear (×2)
 
+> **This BOM is identical for both build environments** (`bear` ESP-NOW and `bear-mqtt` MQTT).
+> The difference between the two builds is software only — no extra hardware is needed for internet connectivity beyond the ESP32-S3's built-in WiFi.
+
+
 | Qty | Component | Notes |
 |-----|-----------|-------|
 | 1 | ESP32-S3 DevKitC-1 | Main microcontroller |

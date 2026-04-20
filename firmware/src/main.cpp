@@ -16,8 +16,9 @@ enum BearState {
 static BearState s_state          = STATE_IDLE;
 static bool      s_prev_local_hug = false;
 
-// Written by the ESP-NOW WiFi task, read by loop() — volatile prevents the
-// compiler from caching the value in a register across loop iterations.
+// volatile: in ESP-NOW mode this is written by the WiFi task and read by loop().
+// In MQTT mode both writes and reads happen on the main thread (via comms_update),
+// but volatile is harmless and keeps the declaration correct for both builds.
 static volatile bool s_remote_hugged = false;
 
 static void on_remote_hug(bool remote_is_hugged) {
@@ -98,4 +99,5 @@ void loop() {
 
     heartbeat_update();
     actuators_update();
+    comms_update();
 }

@@ -1,6 +1,11 @@
 #include "sensors.h"
 #include "config.h"
 
+#ifdef USE_TOUCH_SENSOR
+static_assert(TOUCH_THRESHOLD_RATIO > 0.1f && TOUCH_THRESHOLD_RATIO < 0.99f,
+    "TOUCH_THRESHOLD_RATIO must be between 0.1 and 0.99");
+#endif
+
 static bool     s_hugged         = false;
 static uint32_t s_last_change_ms = 0;
 

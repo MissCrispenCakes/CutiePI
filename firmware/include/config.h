@@ -5,14 +5,36 @@
 // Run once with Serial.println(WiFi.macAddress()) in setup() to discover MACs.
 #define BEAR_ID 0
 
-// ── Peer MAC Address ──────────────────────────────────────────────────────────
-// REQUIRED: replace with the actual MAC of the OTHER bear before flashing.
+// ── Peer MAC Address (ESP-NOW mode only) ──────────────────────────────────────
+// Not used in MQTT mode — skip this section if building with USE_MQTT.
+// REQUIRED for ESP-NOW: replace with the actual MAC of the OTHER bear.
 // To find the MAC: flash with BEAR_ID set, open Serial Monitor — it prints on boot.
 // All-0xFF is the ESP-NOW broadcast address and will NOT reach a specific peer.
-#if BEAR_ID == 0
-static const uint8_t PEER_MAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // ← Bear B MAC here
-#else
-static const uint8_t PEER_MAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // ← Bear A MAC here
+#ifndef USE_MQTT
+  #if BEAR_ID == 0
+  static const uint8_t PEER_MAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // ← Bear B MAC here
+  #else
+  static const uint8_t PEER_MAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // ← Bear A MAC here
+  #endif
+#endif
+
+// ── WiFi + MQTT (MQTT mode only) ──────────────────────────────────────────────
+// Only used when building with USE_MQTT (pio run -e bear-mqtt).
+// Credentials live in secrets.h (gitignored) — never hardcode them here.
+// Copy firmware/include/secrets.h.example → firmware/include/secrets.h first.
+#ifdef USE_MQTT
+  #if __has_include("secrets.h")
+    #include "secrets.h"
+  #endif
+  // Fallback placeholders — active only if secrets.h is missing.
+  #ifndef WIFI_SSID
+    #define WIFI_SSID     "your_network_name"
+    #define WIFI_PASSWORD "your_network_password"
+    #define MQTT_BROKER   "broker.hivemq.com"
+    #define MQTT_PORT     1883
+    #define MQTT_USER     ""
+    #define MQTT_PASS     ""
+  #endif
 #endif
 
 // ── Sensor Mode ───────────────────────────────────────────────────────────────
