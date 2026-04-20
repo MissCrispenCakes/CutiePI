@@ -94,6 +94,19 @@ The platform version is pinned in `platformio.ini`. PlatformIO downloads everyth
 
 ---
 
+## Coming from another setup?
+
+If you're joining this project with existing hardware — for example a heating pad already wired to an Arduino Nano for interim testing — here's what changes:
+
+- **Swap the Nano for an ESP32-S3 DevKitC-1.** The Arduino code won't port directly; use this repo instead.
+- **The ESP32-S3 runs at 3.3 V.** You cannot drive a heating pad directly from a GPIO pin. You need the MOSFET circuit in `hardware/bom.md` — the same one your Nano demo likely uses, just wired to GPIO6 instead of whatever pin you had before.
+- **PlatformIO replaces the Arduino IDE.** Install the VS Code extension, clone this repo, and `pio run` handles everything. You don't need to manually install board support or libraries.
+- **Two bears need to know each other's MAC address** before they can communicate. Flash first with the placeholder config, grab the MAC from the serial monitor, then reflash with the real address. The README steps below walk through this.
+
+Everything else — pressure sensor, LED, heating pad logic — works the same way you'd expect from Arduino. The full wiring diagram is in [`hardware/bom.md`](hardware/bom.md).
+
+---
+
 ## Setup
 
 ### Prerequisites
