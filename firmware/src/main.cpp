@@ -1,0 +1,101 @@
+#include <Arduino.h>
+#include "config.h"
+#include "comms.h"
+#include "sensors.h"
+#include "heartbeat.h"
+#include "actuators.h"
+
+// ── Bear State Machine ────────────────────────────────────────────────────────
+enum BearState {
+    STATE_IDLE,        // nobody is hugging
+    STATE_LOCAL_HUG,   // only this bear is being hugged
+    STATE_REMOTE_HUG,  // only the other bear is being hugged  → show heartbeat
+    STATE_MUTUAL_HUG,  // both bears are being hugged          → heartbeat + warmth
+};
+
+static BearState s_state          = STATE_IDLE;
+static bool      s_prev_local_hug = false;
+
+// Written by the ESP-NOW WiFi task, read by loop() — volatile prevents the
+// compiler from caching the value in a register across loop iterations.
+static volatile bool s_remote_hugged = false;
+
+static void on_remote_hug(bool remote_is_hugged) {
+    s_remote_hugged = remote_is_hugged;
+}
+
+static const char* state_name(BearState s) {
+    switch (s) {
+        case STATE_IDLE:       return "IDLE";
+        case STATE_LOCAL_HUG:  return "LOCAL_HUG";
+        case STATE_REMOTE_HUG: return "REMOTE_HUG";
+        case STATE_MUTUAL_HUG: return "MUTUAL_HUG";
+        default:               return "UNKNOWN";
+    }
+}
+
+static BearState resolve_state(bool local, bool remote) {
+    if (local && remote) return STATE_MUTUAL_HUG;
+    if (local)           return STATE_LOCAL_HUG;
+    if (remote)          return STATE_REMOTE_HUG;
+    return STATE_IDLE;
+}
+
+static void apply_state(BearState state) {
+    switch (state) {
+        case STATE_IDLE:
+            heartbeat_set_active(false);
+            actuators_set_heater(false);
+            break;
+
+        case STATE_LOCAL_HUG:
+            // This bear is squeezed — signal sent, waiting for mutual hug.
+            // No local feedback yet; the other bear will show its heartbeat.
+            heartbeat_set_active(false);
+            actuators_set_heater(false);
+            break;
+
+        case STATE_REMOTE_HUG:
+            // Someone is hugging the other bear — pulse the LED as a heartbeat.
+            heartbeat_set_active(true);
+            actuators_set_heater(false);
+            break;
+
+        case STATE_MUTUAL_HUG:
+            // Both bears are hugged — heartbeat + heating pad warmth.
+            heartbeat_set_active(true);
+            actuators_set_heater(true);
+            break;
+    }
+}
+
+// ── Arduino Entry Points ──────────────────────────────────────────────────────
+void setup() {
+    Serial.begin(115200);
+    sensors_init();
+    heartbeat_init();
+    actuators_init();
+    comms_init(on_remote_hug);
+    Serial.printf("CutiePI Bear %d ready!\n", BEAR_ID);
+}
+
+void loop() {
+    bool local_hugged  = sensors_is_hugged();
+    bool remote_hugged = s_remote_hugged;  // snapshot volatile once per iteration
+
+    // Transmit only on state change to avoid flooding
+    if (local_hugged != s_prev_local_hug) {
+        comms_send(local_hugged);
+        s_prev_local_hug = local_hugged;
+    }
+
+    BearState new_state = resolve_state(local_hugged, remote_hugged);
+    if (new_state != s_state) {
+        Serial.printf("State: %s → %s\n", state_name(s_state), state_name(new_state));
+        s_state = new_state;
+        apply_state(s_state);
+    }
+
+    heartbeat_update();
+    actuators_update();
+}
