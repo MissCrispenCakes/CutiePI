@@ -76,7 +76,7 @@ Quick overview per bear:
 - **Red LED** + 100 Ω resistor — heartbeat glow
 - **5 V flexible heating pad** (≤500 mA) + N-channel MOSFET — warmth
 - **TMP36** analog temperature sensor — heater temperature safety
-- **LiPo battery** + TP4056 charger board — portable power
+- **LiPo battery** (1S, JST connector) — portable power, charges via the board's onboard USB-C circuit (no separate charger needed)
 
 Default pin assignments (change in `config.h`):
 
@@ -227,6 +227,8 @@ Edit `secrets.h` with your network and broker details:
 #define WIFI_PASSWORD "your_network_password"
 #define MQTT_BROKER   "broker.hivemq.com"  // or your own broker
 #define MQTT_PORT     1883
+#define MQTT_USER     ""  // leave empty for brokers that need no auth
+#define MQTT_PASS     ""
 ```
 
 Then set `BEAR_ID` in `firmware/include/config.h` (0 for Bear A, 1 for Bear B).
@@ -240,9 +242,22 @@ pio run -e bear-mqtt
 pio run -e bear-mqtt -t upload
 ```
 
+#### Step 4 — Monitor serial output
+
+```
+pio device monitor
+```
+
+On boot the board prints its MAC address, battery voltage, and WiFi/MQTT connection status:
+```
+CutiePI Bear 0 ready! Battery: 3.94 V (78%)
+```
+
+If nothing appears, open the monitor first then press **RESET** on the board.
+
 ---
 
-### Step 4 — Test before assembly (both options)
+### Step 5 — Test before assembly (both options)
 
 Use the component snippets in `firmware/snippets/` to verify each part before sewing anything up — especially the TMP36:
 

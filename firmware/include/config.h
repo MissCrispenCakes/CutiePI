@@ -45,7 +45,7 @@
 // #define USE_TOUCH_SENSOR
 
 // ── Board-specific pin overrides ─────────────────────────────────────────────
-// DualEye 1.28 has different reserved pins and a BAT_ADC conflict on GPIO1.
+// DualEye 1.28 has different reserved pins; GPIO1 is the board's BAT_ADC and unavailable for TMP36.
 // Pin definitions for that board live in config_dualeye.h and are pulled in below.
 // Everything else in this file (thresholds, BPM, timing) applies to both boards.
 #ifdef BOARD_DUALEYE

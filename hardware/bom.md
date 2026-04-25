@@ -183,7 +183,14 @@ It is also printed at startup (USB required to see serial output — see boot no
 | Power source | How to boot |
 |---|---|
 | USB-C | Board boots automatically when cable is plugged in |
-| LiPo (no USB) | Press and hold the power button until the display lights up |
+| LiPo (no USB) | Press and hold the power button — release when the display flashes 3 times |
+
+The 3-flash sequence is a boot indicator built into the firmware (`setup()` in `main.cpp`). It pulses the display backlight three times immediately after the power latch succeeds, giving visible confirmation that the board is alive without needing a serial monitor. If the display does not flash, see the troubleshooting notes below.
+
+**Battery boot troubleshooting:**
+- No flashes at all → button not held long enough, battery too flat (<3 V), or JST polarity reversed
+- Flashes once then goes dark → GPIO7 power latch is failing; this should not happen with the current firmware but would indicate `power_mgr_init()` did not run first in `setup()`
+- Board was working on USB but not battery → check that the power button is actually being pressed; the board does not auto-start on battery the way it does on USB
 
 Serial output via `pio device monitor` requires a USB connection (the board uses USB CDC, not a USB-UART chip). On battery-only power the bear operates normally but produces no serial output.
 
