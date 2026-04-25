@@ -76,6 +76,7 @@ static void apply_state(BearState state) {
 void setup() {
     power_mgr_init();  // first: latch board power on (GPIO7 HIGH)
     Serial.begin(115200);
+    delay(1500);
     sensors_init();
     heartbeat_init();
     actuators_init();
