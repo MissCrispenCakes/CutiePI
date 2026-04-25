@@ -170,7 +170,16 @@ The Waveshare board has an onboard battery circuit that the firmware must intera
 
 Connect the LiPo **JST-PH 2-pin** connector directly to the board's onboard battery port. The board's built-in charge circuit handles charging via USB-C automatically — no separate charger board is needed.
 
-> ⚠ **Check JST polarity before plugging in.** Many generic LiPo batteries have reversed polarity compared to Waveshare boards (red = positive, black = GND is correct). Plugging in backwards can damage the board instantly. Confirm with a multimeter: the red wire from the battery should read positive voltage relative to black before inserting the connector.
+> ⚠ **Test JST polarity with a multimeter before plugging in — do not skip this.**
+> Many cheap LiPo batteries ship with the JST pins reversed. Plugging in backwards damages the board instantly.
+>
+> **How to check:**
+> 1. Set multimeter to DC voltage (20 V range)
+> 2. Red probe → battery red wire, black probe → battery black wire
+> 3. A reading of **+3.5 V to +4.2 V** = correct polarity, safe to plug in
+> 4. A negative reading = wires are reversed — do not plug in
+>
+> **If reversed:** use a toothpick or safety pin to press the locking tab on each pin inside the JST housing, slide the pins out, swap them, push back in until they click, then re-measure.
 
 Battery voltage is logged to Serial every 60 seconds:
 ```

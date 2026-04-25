@@ -8,7 +8,7 @@
 
 ## Most recent code update
 
-With the most recent update, now when you boot on battery, the screen will flash bright 3 times in quick succession. If you see the flashes the board is alive, the battery is working, and the ESP32-S3 (not DualEye) GPIO7 latch succeeded. If nothing one of the three failure modes above.
+With the most recent update, now when you boot on battery, the screen will flash bright 3 times in quick succession. If you see the flashes the board is alive, the battery is working, and the ESP32-S3 (not DualEye) GPIO7 latch succeeded. If nothing, then probably still one of the three failure modes above.
 
 ## Step-by-step for testing battery
 
