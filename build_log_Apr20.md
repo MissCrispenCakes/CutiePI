@@ -3,7 +3,7 @@
 ## 2026-04-20 — Both environments passing
 
 Platform: `espressif32 @ 6.5.0` (framework-arduinoespressif32 @ 2.0.14)
-Hardware: ESP32-S3 DevKitC-1-N8 (8 MB QD, No PSRAM) — 240 MHz, 320 KB RAM, 8 MB Flash
+Hardware: Waveshare ESP32-S3-Touch-LCD-1.46B (ESP32-S3R8 — 16 MB Flash, 8 MB OPI PSRAM) — 240 MHz, 512 KB SRAM
 
 | Environment | Status  | Duration | RAM used       | Flash used      |
 |-------------|---------|----------|----------------|-----------------|
