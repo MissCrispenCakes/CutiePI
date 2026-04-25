@@ -40,14 +40,19 @@ CutiePI/
 │   │   ├── actuators.{h,cpp}     # Heating pad control + temperature cycling + safety cutoff
 │   │   ├── temp_sensor.{h,cpp}   # TMP36 analog temperature sensor read
 │   │   └── power_mgr.{h,cpp}     # Battery voltage + power button + board power latch
-│   └── fix/
-│       ├── README.md                  # When and how to use these variants
-│       ├── heartbeat_3x.cpp           # Arduino ESP32 3.x LEDC API
-│       ├── comms_3x.cpp               # Arduino ESP32 3.x (ESP-NOW callback + full MQTT support)
-│       ├── actuators_usb_heater.cpp   # P-channel MOSFET for USB heating pad
-│       └── heartbeat_led_strip.cpp    # WS2812B addressable LED strip
-└── hardware/
-    └── bom.md                 # Parts list, wiring diagram, and sensor selection guide
+│   ├── fix/
+│   │   ├── README.md                  # When and how to use these variants
+│   │   ├── heartbeat_3x.cpp           # Arduino ESP32 3.x LEDC API
+│   │   ├── comms_3x.cpp               # Arduino ESP32 3.x (ESP-NOW callback + full MQTT support)
+│   │   ├── actuators_usb_heater.cpp   # P-channel MOSFET for USB heating pad
+│   │   └── heartbeat_led_strip.cpp    # WS2812B addressable LED strip
+│   ├── reference/             # Earlier standalone sketches kept for reference
+│   └── snippets/              # Component test sketches — flash these before assembly
+├── hardware/
+│   ├── bom.md                 # Parts list, wiring diagram, and sensor selection guide
+│   └── datasheets/            # Board schematics, pinouts, and component datasheets
+└── docs/
+    └── dev-logs/              # Build logs and development notes
 ```
 
 ---
@@ -156,15 +161,34 @@ static const uint8_t PEER_MAC[6] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66}; // Bear
 
 #### Step 3 — Build and flash
 
-```bash
-cd firmware
+From inside the `firmware/` folder:
 
-# Bear A
-pio run -e bear --target upload --upload-port /dev/ttyUSB0
-
-# Bear B
-pio run -e bear --target upload --upload-port /dev/ttyUSB1
 ```
+pio run -e bear
+pio run -e bear -t upload
+```
+
+**Upload port** — PlatformIO detects the port automatically. If it picks the wrong one, specify it manually:
+
+| OS | Flag |
+|----|------|
+| Windows | `-t upload --upload-port COM11` (check Device Manager for your COM number) |
+| macOS | `-t upload --upload-port /dev/cu.usbmodem*` |
+| Linux | `-t upload --upload-port /dev/ttyACM0` |
+
+#### Step 4 — Monitor serial output
+
+```
+pio device monitor
+```
+
+On boot the board prints its MAC address and battery voltage:
+```
+This bear's MAC: AA:BB:CC:DD:EE:FF
+CutiePI Bear 0 ready! Battery: 3.94 V (78%)
+```
+
+If nothing appears, open the monitor first then press **RESET** on the board.
 
 ---
 
@@ -178,6 +202,12 @@ For testing, the free public broker `broker.hivemq.com` requires no account. For
 
 Create a local credentials file from the example (this file is gitignored — safe to put real values in):
 
+**Windows:**
+```powershell
+copy firmware\include\secrets.h.example firmware\include\secrets.h
+```
+
+**macOS / Linux:**
 ```bash
 cp firmware/include/secrets.h.example firmware/include/secrets.h
 ```
@@ -197,19 +227,14 @@ Each bear automatically publishes to `cutiepie/BEAR_ID/hug` and subscribes to th
 
 #### Step 3 — Build and flash
 
-```bash
-cd firmware
-
-# Bear A
-pio run -e bear-mqtt --target upload --upload-port /dev/ttyUSB0
-
-# Bear B
-pio run -e bear-mqtt --target upload --upload-port /dev/ttyUSB1
+```
+pio run -e bear-mqtt
+pio run -e bear-mqtt -t upload
 ```
 
 ---
 
-### Step 4 — Test before assembly
+### Step 4 — Test before assembly (both options)
 
 Use the component snippets in `firmware/snippets/` to verify each part before sewing anything up — especially the TMP36:
 
