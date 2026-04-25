@@ -4,7 +4,7 @@
 
 2. Battery too flat — below ~3V the board won't start. A brand new 1100mAh cell from storage might be low.
 
-3. JST polarity reversed - this would prevent any power at all.. and could be how the LiPo came from factory.
+3. JST polarity reversed - this would prevent any power at all.. and could be how the LiPo came from factory. Test this with multimeter -> if polarity is reversed when using red to red and black to black then need to swap wires in the JST.
 
 ## Most recent code update
 
