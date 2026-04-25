@@ -1,0 +1,92 @@
+PS C:\Users\grace\OneDrive\Documents\GitHub\CutiePI> cd .\firmware\
+PS C:\Users\grace\OneDrive\Documents\GitHub\CutiePI\firmware> pio run -e bear --target upload --upload-port /dev/ttyUSB0                
+Processing bear (platform: espressif32 @ 6.5.0; board: esp32-s3-devkitc-1; framework: arduino)
+-------------------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.5.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 33 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- WiFi @ 2.0.0
+Building in release mode
+Retrieving maximum program size .pio\build\bear\firmware.elf
+Checking size .pio\build\bear\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.4% (used 44068 bytes from 327680 bytes)
+Flash: [==        ]  21.1% (used 705257 bytes from 3342336 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyUSB0
+Uploading .pio\build\bear\firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyUSB0
+
+A fatal error occurred: Could not open /dev/ttyUSB0, the port doesn't exist
+*** [upload] Error 2
+=============================== [FAILED] Took 6.63 seconds ===============================
+
+Environment    Status    Duration
+-------------  --------  ------------
+bear           FAILED    00:00:06.631
+========================== 1 failed, 0 succeeded in 00:00:06.631 ==========================
+PS C:\Users\grace\OneDrive\Documents\GitHub\CutiePI\firmware> pio run -e bear --target upload --upload-port /dev/ttyUSB0
+Processing bear (platform: espressif32 @ 6.5.0; board: esp32-s3-devkitc-1; framework: arduino)
+-------------------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.5.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 33 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- WiFi @ 2.0.0
+Building in release mode
+Retrieving maximum program size .pio\build\bear\firmware.elf
+Checking size .pio\build\bear\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.4% (used 44068 bytes from 327680 bytes)
+Flash: [==        ]  21.1% (used 705257 bytes from 3342336 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyUSB0
+Uploading .pio\build\bear\firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyUSB0
+
+A fatal error occurred: Could not open /dev/ttyUSB0, the port doesn't exist
+*** [upload] Error 2
+=============================== [FAILED] Took 2.14 seconds ===============================
+
+Environment    Status    Duration
+-------------  --------  ------------
+bear           FAILED    00:00:02.142
+========================== 1 failed, 0 succeeded in 00:00:02.142 ==========================
+PS C:\Users\grace\OneDrive\Documents\GitHub\CutiePI\firmware> 
