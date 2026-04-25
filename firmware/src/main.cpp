@@ -73,8 +73,21 @@ static void apply_state(BearState state) {
 }
 
 // ── Arduino Entry Points ──────────────────────────────────────────────────────
+// LCD backlight pin — used only for the boot flash below, not driven elsewhere.
+// GPIO5 is reserved by the board but safe to pulse briefly here.
+static constexpr uint8_t LCD_BL_PIN = 5;
+
 void setup() {
     power_mgr_init();  // first: latch board power on (GPIO7 HIGH)
+
+    // Boot indicator: flash the display backlight 3× so you can confirm
+    // the board is alive on battery without needing a serial monitor.
+    pinMode(LCD_BL_PIN, OUTPUT);
+    for (int i = 0; i < 3; i++) {
+        digitalWrite(LCD_BL_PIN, HIGH); delay(200);
+        digitalWrite(LCD_BL_PIN, LOW);  delay(200);
+    }
+
     Serial.begin(115200);
     delay(1500);
     sensors_init();
