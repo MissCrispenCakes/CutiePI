@@ -1,5 +1,6 @@
 Didn't have n-channel MOSFET IRLZ44N, used TIP120 in testing 
 
-... do we need a heatsink for the mosfet?  https://www.waveshare.com/product/accessories/power-heat-sinks/heat-sinks/copper-heat-sink.htm
+... how about this analog temp sensor?
+https://www.amazon.ca/OSOYOO-TMP36-Temperature-self-Heating-Precision/dp/B0GKG3FLCL/ref=sr_1_12?crid=37LU3ABVLWCQC&dib=eyJ2IjoiMSJ9.V7ZcHPITILEqK6_PYbbV9SJJRhGF7qIDcSVP-J2QGyJoRspRFoqVbRpfVLFgxfLlXW8g_TX2lb0PAEBNnv41mSg1eQ6jTKF_e2JYciOH2C18u35VHRA5OxiycxMyEALyCT_7y9CnggQbEd9LjlRanieW-yPxd6BKWhGWxbXzq1-3u-bvvUmWvJzJ8lBR6e5ekz7XWKNc5NuNtKwP878_Rqv9-SedKYIVkguStP8fTEhyAbfqHqVrLC42DpJpPWxoiTYdyMB3qLSBOxWO5gjZCKZnIHiSkN6InS42JVqJhog.Wp58WKKRy3t9hpem0Nw2ilfNzLfKbXRabVFjdeRDrow&dib_tag=se&keywords=analog%2Btemperature%2Bsensor&qid=1777133921&sprefix=analog%2Btemper%2Caps%2C140&sr=8-12&th=1
 
 Also used Nano Arduino in sub of ESP32-S3 in initial testing - need to change pins in temperature sensor shut-off code to match the esp-32 pinout.
