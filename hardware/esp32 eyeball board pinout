@@ -1,0 +1,25 @@
+SH1.0 14-Pin Header Layout (Pinout)
+
+Note: In JST SH connectors, Pin 1 is the pin furthest to the left when you are looking at the connector opening with the metal crimp contacts facing up at you.
+The pinout order mapped directly to the 1.0mm 14-pin connector on the board reads as follows:
+
+Pin	Function / GPIO	Description
+1	              5V (VBUS / VSYS)	Main 5V power input/output
+2	              3.3V	Regulated 3.3V power output
+3	              GND	Ground
+4	              GPIO 43	UART TX
+5	              GPIO 44	UART RX
+6	              GPIO 1	General Purpose I/O
+7	              GPIO 2	General Purpose I/O
+8	              GPIO 41	General Purpose I/O
+9	              GPIO 42	General Purpose I/O
+10	            GPIO 15	I2C SDA
+11	            GPIO 16	I2C SCL
+12	            GPIO 3	ADC / Touch Interrupt pin
+13	            GND	Ground
+14	            GND	Ground
+
+
+Many of these pins are shared with onboard hardware:
+I2C Pins (GPIO 15 & 16) are connected to the internal touch screen controller. Do not pull these high or low externally without keeping protocol conflicts in mind.
+UART Pins (GPIO 43 & 44) are hardwired as the default hardware serial port on the ESP32-S3. 
