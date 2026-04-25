@@ -10,13 +10,13 @@
 | 1 | Force-Sensitive Resistor (FSR 402 or similar) **with 2-pin JST-PH connector** | Hug detection; JST pins are the two FSR terminals — wire into voltage divider on the board |
 | 1 | Red LED (5 mm, ~2V Vf) **with 2-pin JST-PH connector** | Heartbeat glow; JST red → board-side 100 Ω resistor → GPIO13, JST black → GND |
 | 1 | 100 Ω resistor | Current limiter for LED (on the board, between GPIO13 and the LED JST red wire) |
-| 1 | Heating pad (5 V, ≤500 mA) **with 2-pin JST-PH connector** | Warmth; JST red → MOSFET drain side / 5 V rail, JST black → MOSFET drain |
+| 1 | Heating pad (5 V, ≤500 mA) **with 2-pin JST-PH connector** | Warmth; JST red → board 5V pin (see ⚠ note in wiring section), JST black → MOSFET drain |
 | 1 | TMP36 analog temperature sensor **with 2-pin JST-PH connector** | Heater temperature safety; VOUT wired directly to GPIO1 — no voltage divider needed |
 | 1 | N-channel MOSFET (e.g. 2N7000 or IRLZ44N) | Controls heater from 3.3 V GPIO |
 | 1 | 1 kΩ resistor | MOSFET gate resistor |
 | 1 | 1N4007 flyback diode | Across heater JST terminals on the board (cathode toward 5 V) |
 | 1 | 10 kΩ resistor | FSR voltage divider pull-down |
-| 1 | LiPo battery (1S, 1000–2000 mAh) + TP4056 charger board | Portable power |
+| 1 | LiPo battery (1S, 1000–2000 mAh) with JST-PH 2-pin connector | Portable power — plugs directly into the board's onboard battery port; no separate charger board needed. Charging is handled via USB-C on the board. |
 | — | 2-pin JST-PH connectors + crimps (or pre-crimped pigtails) | For LED, FSR, heater pad, and TMP36 |
 | — | Hookup wire, heat-shrink tubing, hot glue | Assembly |
 
@@ -52,9 +52,21 @@ GND   ──── TMP36 pin 3 (GND)
 GPIO12 ─── 1 kΩ ─── MOSFET gate
                      MOSFET source ──────────────────── GND
                      MOSFET drain  ─── [JST black]
-                     [JST red]     ─── 5 V
+                     [JST red]     ─── 5 V pin (see ⚠ below)
                      1N4007 flyback diode across JST pins on board
                      (diode cathode toward 5 V / JST red)
+
+⚠ VERIFY THE 5V PIN BEFORE ASSEMBLING
+The board's external header has a 5V pin labelled "VBUS / VSYS".
+On USB power this is always 5V. On battery it may be dead if the pin is
+VBUS only (no onboard boost converter).
+Before soldering: plug in the LiPo with USB disconnected and measure the
+5V header pin with a multimeter.
+  - Reads ~5V → safe to use for the heater.
+  - Reads 0V  → the pin is VBUS only. Options:
+      (a) add a small 5V boost module (e.g. MT3608) between the battery
+          and the heater rail, or
+      (b) swap to a 3.3V-rated heating pad and wire it to the 3.3V pin.
 ```
 
 ## GPIO Pins Reserved by the Waveshare ESP32-S3-Touch-LCD-1.46B
@@ -156,13 +168,24 @@ The Waveshare board has an onboard battery circuit that the firmware must intera
 
 ### LiPo wiring
 
-Connect the LiPo **JST-PH 2-pin** connector to the board's battery port. The board's TP4056-compatible charge circuit handles charging via USB-C automatically — no extra charger board is needed.
+Connect the LiPo **JST-PH 2-pin** connector directly to the board's onboard battery port. The board's built-in charge circuit handles charging via USB-C automatically — no separate charger board is needed.
+
+> ⚠ **Check JST polarity before plugging in.** Many generic LiPo batteries have reversed polarity compared to Waveshare boards (red = positive, black = GND is correct). Plugging in backwards can damage the board instantly. Confirm with a multimeter: the red wire from the battery should read positive voltage relative to black before inserting the connector.
 
 Battery voltage is logged to Serial every 60 seconds:
 ```
 Battery: 3.94 V (78%)
 ```
-It is also printed at startup.
+It is also printed at startup (USB required to see serial output — see boot note below).
+
+### Booting on battery vs USB
+
+| Power source | How to boot |
+|---|---|
+| USB-C | Board boots automatically when cable is plugged in |
+| LiPo (no USB) | Press and hold the power button until the display lights up |
+
+Serial output via `pio device monitor` requires a USB connection (the board uses USB CDC, not a USB-UART chip). On battery-only power the bear operates normally but produces no serial output.
 
 ### Battery capacity
 
