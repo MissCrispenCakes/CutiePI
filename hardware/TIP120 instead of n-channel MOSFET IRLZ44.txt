@@ -1,3 +1,5 @@
 Didn't have n-channel MOSFET IRLZ44N, used TIP120 in testing 
 
-Also used Nano Arduino in sub of ESP32-S3 
+... do we need a heatsink for the mosfet?  https://www.waveshare.com/product/accessories/power-heat-sinks/heat-sinks/copper-heat-sink.htm
+
+Also used Nano Arduino in sub of ESP32-S3 in initial testing - need to change pins in temperature sensor shut-off code to match the esp-32 pinout.
