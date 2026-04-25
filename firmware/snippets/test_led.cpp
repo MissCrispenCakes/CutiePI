@@ -1,11 +1,11 @@
 #include <Arduino.h>
 
 // ── Test: LED PWM heartbeat pulse ────────────────────────────────────────────
-// Connect: LED + 100 Ω resistor between GPIO5 and GND.
+// Connect: LED + 100 Ω resistor between GPIO13 and GND.
 // You should see a slow lub-dub pulse (two quick flashes, then pause).
 // Open Serial Monitor at 115200 baud to watch brightness values.
 
-#define PIN_LED 5
+#define PIN_LED 13
 #define LEDC_CH 0
 
 // Lub-dub timing (milliseconds)
@@ -37,7 +37,7 @@ void setup() {
     ledcWrite(LEDC_CH, 0);
     Serial.println("─────────────────────────────");
     Serial.println("CutiePI LED test — OK");
-    Serial.println("Watch for lub-dub pulse on GPIO5");
+    Serial.println("Watch for lub-dub pulse on GPIO13");
     Serial.println("─────────────────────────────");
 }
 

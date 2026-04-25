@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include "config.h"
+#include "power_mgr.h"
 #include "comms.h"
 #include "sensors.h"
 #include "heartbeat.h"
 #include "actuators.h"
+#include "temp_sensor.h"
 
 // ── Bear State Machine ────────────────────────────────────────────────────────
 enum BearState {
@@ -72,15 +74,20 @@ static void apply_state(BearState state) {
 
 // ── Arduino Entry Points ──────────────────────────────────────────────────────
 void setup() {
+    power_mgr_init();  // first: latch board power on (GPIO7 HIGH)
     Serial.begin(115200);
     sensors_init();
     heartbeat_init();
     actuators_init();
+    temp_sensor_init();
     comms_init(on_remote_hug);
-    Serial.printf("CutiePI Bear %d ready!\n", BEAR_ID);
+    Serial.printf("CutiePI Bear %d ready! Battery: %.2f V (%d%%)\n",
+                  BEAR_ID, power_mgr_battery_volts(), power_mgr_battery_pct());
 }
 
 void loop() {
+    power_mgr_update();
+    float temp_c       = temp_sensor_read_celsius();
     bool local_hugged  = sensors_is_hugged();
     bool remote_hugged = s_remote_hugged;  // snapshot volatile once per iteration
 
@@ -98,6 +105,6 @@ void loop() {
     }
 
     heartbeat_update();
-    actuators_update();
+    actuators_update(temp_c);
     comms_update();
 }

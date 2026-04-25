@@ -44,10 +44,27 @@
 // there is a known WiFi/touch interference issue that affects this project.
 // #define USE_TOUCH_SENSOR
 
+// ── Temperature Sensor ────────────────────────────────────────────────────────
+// TMP36 analog temperature sensor — no voltage divider or library needed.
+// Wiring: 3.3 V → TMP36 pin 1 (VS) | GPIO1 → TMP36 pin 2 (VOUT) | GND → TMP36 pin 3
+#define PIN_TEMP_SENSOR       1   // ADC1_CH0
+
+// Safety thresholds (°C). See hardware/bom.md for TMP36 wiring.
+#define TEMP_MAX_SAFE_C       48.0f  // hard shutoff; re-hug to re-enable
+#define TEMP_TARGET_C         42.0f  // heater cycles off at this temperature
+#define TEMP_HYSTERESIS_C      2.0f  // heater cycles back on below (TARGET − HYSTERESIS)
+
 // ── Pin Definitions ───────────────────────────────────────────────────────────
-#define PIN_PRESSURE_SENSOR   4   // ADC input (FSR mode) or touch pad T4 (touch mode) — same GPIO
-#define PIN_LED               5   // PWM output — red LED (via current-limiting resistor)
-#define PIN_HEATER            6   // Digital output — MOSFET gate controlling heating pad
+// Waveshare ESP32-S3-Touch-LCD-1.46B pin constraints:
+//   GPIO4  = TP_INT (touch panel interrupt)       ← do not use
+//   GPIO5  = LCD_BL  (display backlight)          ← do not use
+//   GPIO6  = PWR_KEY_Input_PIN (power button)     ← reserved — see power_mgr.cpp
+//   GPIO7  = PWR_Control_PIN  (power latch)       ← reserved — see power_mgr.cpp
+//   GPIO8  = BAT_ADC_PIN      (battery ADC)       ← reserved — see power_mgr.cpp
+// External header free GPIO: GPIO1, GPIO3, GPIO12, GPIO13
+#define PIN_PRESSURE_SENSOR   3   // ADC input (FSR mode, ADC1_CH2) or touch pad T3 (touch mode)
+#define PIN_LED               13  // PWM output — red LED (via current-limiting resistor)
+#define PIN_HEATER            12  // Digital output — MOSFET gate controlling heating pad
 
 // ── Sensor Thresholds ─────────────────────────────────────────────────────────
 // FSR mode: ADC value (0–4095) above which a hug is detected.
@@ -57,6 +74,7 @@
 // 0.6 = requires a 40% drop from the untouched baseline. Raise toward 0.8 if
 // the bear is hard to trigger through thick fabric; lower toward 0.4 to reduce
 // false triggers from nearby hands without contact.
+// Note: GPIO3 = touch channel T3 on the ESP32-S3.
 #define TOUCH_THRESHOLD_RATIO 0.6f
 
 // Debounce applies to both modes. Touch is noisier due to WiFi interference —

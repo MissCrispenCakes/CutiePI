@@ -24,7 +24,7 @@ Dependency Graph
 Building in release mode
 Retrieving maximum program size .pio\build\bear\firmware.elf
 Checking size .pio\build\bear\firmware.elf
-Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect
 RAM:   [=         ]  13.4% (used 44068 bytes from 327680 bytes)
 Flash: [==        ]  21.1% (used 705257 bytes from 3342336 bytes)
 Configuring upload protocol...
@@ -90,3 +90,10 @@ Environment    Status    Duration
 bear           FAILED    00:00:02.142
 ========================== 1 failed, 0 succeeded in 00:00:02.142 ==========================
 PS C:\Users\grace\OneDrive\Documents\GitHub\CutiePI\firmware> 
+
+
+
+  pio run -e bear --target upload --upload-port COM11
+
+
+  pio device monitor --port COM11 --baud 115200

@@ -15,9 +15,10 @@ Each file is a complete standalone sketch — safe to run with nothing else conn
 | File | Tests | What to have connected |
 |------|-------|----------------------|
 | `test_board.cpp` | Board alive, MAC address prints | Nothing — just the ESP32-S3 via USB |
-| `test_led.cpp` | LED PWM, lub-dub pulse | LED + 100 Ω resistor on GPIO5 |
-| `test_sensor.cpp` | FSR/pressure ADC readings | FSR voltage divider on GPIO4 |
-| `test_heater.cpp` | MOSFET switching, heater on/off | Full MOSFET circuit + heating pad on GPIO6 |
+| `test_led.cpp` | LED PWM, lub-dub pulse | LED + 100 Ω resistor on GPIO13 |
+| `test_sensor.cpp` | FSR/pressure ADC readings | FSR voltage divider on GPIO3 |
+| `test_heater.cpp` | MOSFET switching, heater on/off | Full MOSFET circuit + heating pad on GPIO12 |
+| `test_temp.cpp` | TMP36 readings, threshold labels | TMP36 VOUT on GPIO1 |
 | `test_all.cpp` | All components together | Everything wired up |
 
 ## Tip

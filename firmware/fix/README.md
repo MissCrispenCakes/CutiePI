@@ -61,11 +61,11 @@ Use this instead of `src/actuators.cpp` when the heating pad has a USB-A connect
 
 | | N-channel / JST (`src/actuators.cpp`) | P-channel / USB (`fix/actuators_usb_heater.cpp`) |
 |---|---|---|
-| Init state | `digitalWrite(PIN_HEATER, LOW)` | `digitalWrite(PIN_HEATER, HIGH)` |
-| Heater on | `digitalWrite(PIN_HEATER, HIGH)` | `digitalWrite(PIN_HEATER, LOW)` |
-| Heater off | `digitalWrite(PIN_HEATER, LOW)` | `digitalWrite(PIN_HEATER, HIGH)` |
+| Init state | `LOW` (off) | `HIGH` (off) |
+| Cycling on | `HIGH` | `LOW` |
+| Cycling off / cutoff | `LOW` | `HIGH` |
 
-The P-channel gate is driven inverted: HIGH = off, LOW = on. Everything else — safety cutoff, timing, API — is identical.
+The P-channel gate is inverted: HIGH = MOSFET off, LOW = MOSFET on. Everything else — temperature cycling, over-temp cutoff, session time cutoff, `actuators_update(float)` signature — is identical to `src/actuators.cpp`.
 
 **To use:** Copy `fix/actuators_usb_heater.cpp` → `src/actuators.cpp`. No other file changes needed.
 
@@ -83,7 +83,7 @@ Use this instead of `src/heartbeat.cpp` when using a WS2812B strip (or compatibl
 | Color | Physical red LED | RGB set to `CRGB(brightness, 0, 0)` |
 | `NUM_LEDS` | n/a | Set at top of file (default: 8) |
 
-`PIN_LED` (config.h, currently GPIO5) is reused as the strip data pin. Power the strip from a dedicated 5V rail — not the ESP32's 3.3V or onboard 5V pin if the strip has more than ~3 LEDs.
+`PIN_LED` (config.h, currently GPIO13) is reused as the strip data pin. Power the strip from a dedicated 5V rail — not the ESP32's 3.3V or onboard 5V pin if the strip has more than ~3 LEDs.
 
 **To use:**
 1. Copy `fix/heartbeat_led_strip.cpp` → `src/heartbeat.cpp`

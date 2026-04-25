@@ -5,7 +5,7 @@
 // Addressable LED strip variant (WS2812B or compatible).
 //
 // Hardware difference from the single-LED version:
-//   GPIO5 ─── 330 Ω ─── strip data-in
+//   GPIO13 ─── 330 Ω ─── strip data-in
 //   5V    ─────────────── strip power (use a dedicated 5V rail, not the ESP32 3.3V pin)
 //   GND   ─────────────── strip GND
 //
