@@ -5,7 +5,7 @@
 //
 // Wiring difference from the JST/N-channel version:
 //   5V ─── P-MOSFET source
-//           P-MOSFET gate  ─── 1 kΩ ─── GPIO6
+//           P-MOSFET gate  ─── 1 kΩ ─── GPIO12
 //           P-MOSFET drain ─── USB pad red wire (VBUS)
 //           USB pad black wire ─── GND
 //           1N4007 flyback diode across pad terminals (cathode toward 5V)

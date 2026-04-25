@@ -279,7 +279,7 @@ All tunable parameters live in `firmware/include/config.h`:
 |-------|-----------|---------|
 | **Temperature cycling** | Heater turns off at `TEMP_TARGET_C`, back on below `TEMP_TARGET_C − TEMP_HYSTERESIS_C` | 42 °C target, 40 °C lower band |
 | **Over-temperature cutoff** | Hard shutoff above `TEMP_MAX_SAFE_C`; re-hug to re-enable | 48 °C |
-| **Session time cutoff** | Hard shutoff after `HEATER_MAX_ON_MS` regardless of temperature; re-hug to re-enable. Acts as a backup if the thermistor is disconnected | 5 min |
+| **Session time cutoff** | Hard shutoff after `HEATER_MAX_ON_MS` regardless of temperature; re-hug to re-enable. Acts as a backup if the temperature sensor is disconnected or fails | 5 min |
 
 All three are enforced inside `actuators_update()`, called every `loop()`. Releasing a hug always turns the heater off immediately regardless of temperature.
 

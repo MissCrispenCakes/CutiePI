@@ -1,3 +1,7 @@
+// LEGACY REFERENCE SKETCH — Arduino Nano + KY-013 thermistor, pre-ESP32 build.
+// Pin numbers below are Arduino Nano pins, not ESP32-S3 GPIO numbers.
+// Current build: see firmware/src/ (ESP32-S3, TMP36 sensor, GPIO1/3/12/13).
+
 /* safety test:
 1) Open the Serial Monitor: Watch the numbers for a minute before you put the sensor inside the toy.
 2) Verify the Direction: Hold the sensor. If the temperature decreases when you touch it, swap the 5V and GND wires 
