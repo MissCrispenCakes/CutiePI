@@ -44,10 +44,22 @@
 // there is a known WiFi/touch interference issue that affects this project.
 // #define USE_TOUCH_SENSOR
 
+// ── Board-specific pin overrides ─────────────────────────────────────────────
+// DualEye 1.28 has different reserved pins and a BAT_ADC conflict on GPIO1.
+// Pin definitions for that board live in config_dualeye.h and are pulled in below.
+// Everything else in this file (thresholds, BPM, timing) applies to both boards.
+#ifdef BOARD_DUALEYE
+  #include "config_dualeye.h"
+#endif
+
 // ── Temperature Sensor ────────────────────────────────────────────────────────
 // TMP36 analog temperature sensor — no voltage divider or library needed.
 // Wiring: 3.3 V → TMP36 pin 1 (VS) | GPIO1 → TMP36 pin 2 (VOUT) | GND → TMP36 pin 3
-#define PIN_TEMP_SENSOR       1   // ADC1_CH0
+// NOTE: GPIO1 is used here for Touch LCD 1.46B only.
+//       On DualEye 1.28, GPIO1 is the battery ADC — see config_dualeye.h.
+#ifndef BOARD_DUALEYE
+#define PIN_TEMP_SENSOR       1   // ADC1_CH0 — Touch LCD 1.46B only
+#endif
 
 // Safety thresholds (°C). See hardware/bom.md for TMP36 wiring.
 #define TEMP_MAX_SAFE_C       48.0f  // hard shutoff; re-hug to re-enable
@@ -62,9 +74,12 @@
 //   GPIO7  = PWR_Control_PIN  (power latch)       ← reserved — see power_mgr.cpp
 //   GPIO8  = BAT_ADC_PIN      (battery ADC)       ← reserved — see power_mgr.cpp
 // External header free GPIO: GPIO1, GPIO3, GPIO12, GPIO13
+// (DualEye 1.28 pin constraints: see config_dualeye.h)
+#ifndef BOARD_DUALEYE
 #define PIN_PRESSURE_SENSOR   3   // ADC input (FSR mode, ADC1_CH2) or touch pad T3 (touch mode)
 #define PIN_LED               13  // PWM output — red LED (via current-limiting resistor)
 #define PIN_HEATER            12  // Digital output — MOSFET gate controlling heating pad
+#endif
 
 // ── Sensor Thresholds ─────────────────────────────────────────────────────────
 // FSR mode: ADC value (0–4095) above which a hug is detected.

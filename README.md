@@ -4,10 +4,14 @@ Two stuffed animals connected over the air. Hug one and the other bear's LED pul
 
 Each bear contains an ESP32-S3, a force-sensitive resistor, a red LED, a small heating pad, and a temperature sensor for heater safety. Two builds are available depending on where the bears will live:
 
-| Build | How they talk | Range |
-|-------|--------------|-------|
-| `bear` (default) | ESP-NOW — direct peer-to-peer WiFi, no router | Same room / building |
-| `bear-mqtt` | MQTT over internet via a shared broker | Anywhere in the world |
+| Build | Board | How they talk | Range |
+|-------|-------|--------------|-------|
+| `bear` (default) | Touch LCD 1.46B | ESP-NOW — direct peer-to-peer WiFi, no router | Same room / building |
+| `bear-mqtt` | Touch LCD 1.46B | MQTT over internet via a shared broker | Anywhere in the world |
+| `dualeye` *(coming soon)* | DualEye 1.28 | ESP-NOW | Same room / building |
+| `dualeye-mqtt` *(coming soon)* | DualEye 1.28 | MQTT | Anywhere in the world |
+
+The `dualeye` builds target the Waveshare ESP32-S3-DualEye-Touch-LCD-1.28 (dual 1.28" round displays, CH343P USB-UART chip). Pin assignments are stubbed in `firmware/include/config_dualeye.h` and must be verified against the schematic before those environments will compile.
 
 ---
 
@@ -29,9 +33,10 @@ The firmware is identical on both bears — only `BEAR_ID` and network credentia
 ```
 CutiePI/
 ├── firmware/
-│   ├── platformio.ini        # Two build environments: bear (ESP-NOW) and bear-mqtt (MQTT)
+│   ├── platformio.ini        # Build environments: bear/bear-mqtt (Touch 1.46B), dualeye/dualeye-mqtt (DualEye 1.28)
 │   ├── include/
-│   │   └── config.h          # All pins, thresholds, BPM, safety limits, WiFi/MQTT credentials
+│   │   ├── config.h          # All pins, thresholds, BPM, safety limits, WiFi/MQTT credentials
+│   │   └── config_dualeye.h  # DualEye 1.28 pin overrides (⚠ TBD — verify when boards arrive)
 │   ├── src/
 │   │   ├── main.cpp              # State machine + main loop
 │   │   ├── comms.{h,cpp}         # ESP-NOW or MQTT — selected at build time
@@ -40,6 +45,9 @@ CutiePI/
 │   │   ├── actuators.{h,cpp}     # Heating pad control + temperature cycling + safety cutoff
 │   │   ├── temp_sensor.{h,cpp}   # TMP36 analog temperature sensor read
 │   │   └── power_mgr.{h,cpp}     # Battery voltage + power button + board power latch
+│   ├── boards/
+│   │   ├── waveshare_esp32s3_touch_lcd_146b.json     # Current board
+│   │   └── waveshare_esp32s3_dualeye_touch_lcd_128.json  # DualEye (boards incoming)
 │   ├── fix/
 │   │   ├── README.md                  # When and how to use these variants
 │   │   ├── heartbeat_3x.cpp           # Arduino ESP32 3.x LEDC API
