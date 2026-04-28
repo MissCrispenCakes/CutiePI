@@ -23,9 +23,9 @@
 
 | Qty | Component | Purpose |
 |-----|-----------|---------|
-| 1 | 5V boost converter module ≥1A out (e.g. MT3608) | Run heater at full rated 5V/750mA instead of LiPo voltage — more heat, shorter battery life |
+| 1 | Adafruit MiniBoost 5V @ 1A (#4654) | Run heater at boosted 5.2V/800mA instead of LiPo voltage; input 0.5–5.5V, fixed 5.2V out, 1A max, ~78% efficient at full load; 17.8×11.3mm; has EN pin (see wiring note) |
 | 1 | 470 µF electrolytic capacitor | Across heater power branch — smooths inrush current when MOSFET switches on |
-| 1 | Inline polyfuse or fuse (750mA–1A) | Heater branch overcurrent protection |
+| 1 | Inline polyfuse or fuse (800mA–1A) | Heater branch overcurrent protection |
 | — | Heat-resistant fabric pocket or insulating sheet | Between heating pad and stuffing — prevents hot spots |
 
 ## Wiring Summary
@@ -76,16 +76,22 @@ MOSFET board OUT− ──→ heating pad black wire
   nominal) rather than 5V, drawing ~570mA and producing ~2.1W of warmth.
   The TMP36 safety cutoffs apply regardless of supply voltage.
 
-── Optional boost converter (for full-rated heater power) ─────
-LiPo (+) ──→ boost converter IN+
-LiPo (−) ──→ boost converter IN−
-Boost 5V out ──→ MOSFET board VIN   (replaces direct LiPo feed above)
-Boost GND    ──→ MOSFET board GND
+── Optional boost (Adafruit MiniBoost 5V @ 1A, #4654) ─────────
+LiPo (+) ──→ MiniBoost IN+
+LiPo (−) ──→ MiniBoost IN−
+MiniBoost 5.2V out ──→ MOSFET board VIN   (replaces direct LiPo feed above)
+MiniBoost GND      ──→ MOSFET board GND
 470µF cap across MOSFET board VIN/GND (smooths switching inrush)
-Polyfuse (750mA–1A) in series on the VIN line
+Polyfuse (800mA–1A) in series on the VIN line
 
-  With boost: heater runs at 5V/750mA/3.75W — full rated power.
-  Without boost: heater runs at ~3.7V/570mA/2.1W — still warm, longer
+  Optional: also wire GPIO12 → MiniBoost EN pin (active HIGH). This shuts
+  the boost down completely when the heater is off, eliminating idle draw.
+  If you skip the EN connection, the MiniBoost stays on continuously —
+  still safe, just wastes a small amount of power when heater is idle.
+
+  With boost: heater runs at 5.2V/~800mA/~4.2W — above rated (5V/750mA)
+  but within safe operating margin for the pad; TMP36 cutoffs apply.
+  Without boost: heater runs at ~3.7V/~570mA/~2.1W — still warm, longer
   battery life.
 ```
 
@@ -233,7 +239,7 @@ SparkFun heating pad resistance: ~6.5 Ω. ESP32 current draw: ~240 mA (WiFi acti
 |--------|------------|------------------------|---------------------------------------|
 | No boost, 3.7 V nominal | ~570 mA | ~810 mA | ~2.8 h |
 | No boost, 4.2 V full charge | ~646 mA | ~886 mA | ~2.5 h |
-| With 5 V boost (~87% efficient) | ~750 mA load → ~1030 mA from cell | ~1270 mA | ~2.0 h |
+| With boost (MiniBoost #4654, ~78% at 800mA) | ~800 mA load → ~1440 mA from cell | ~1680 mA | ~1.6 h |
 
 Temperature cycling (heater on ~50% of the time) roughly doubles runtime compared to continuous heating. A 2500 mAh cell adds another ~65% on top of those figures.
 
