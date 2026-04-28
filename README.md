@@ -24,6 +24,8 @@ The `dualeye` builds target the Waveshare ESP32-S3-DualEye-Touch-LCD-1.28 (dual 
 | Bear B only | Bear A's LED pulses a red heartbeat |
 | Both bears | Both LEDs pulse **and** both heating pads warm up |
 
+The 1.46" round display shows a beating 8-bit heart animation at all times — a visual confirmation that the firmware booted and the power circuit is working, useful when testing on battery without a USB connection.
+
 The firmware is identical on both bears — only `BEAR_ID` and network credentials differ.
 
 ---
@@ -44,7 +46,11 @@ CutiePI/
 │   │   ├── heartbeat.{h,cpp}     # Lub-dub PWM LED animation
 │   │   ├── actuators.{h,cpp}     # Heating pad control + temperature cycling + safety cutoff
 │   │   ├── temp_sensor.{h,cpp}   # TMP36 analog temperature sensor read
-│   │   └── power_mgr.{h,cpp}     # Battery voltage + power button + board power latch
+│   │   ├── power_mgr.{h,cpp}     # Battery voltage + power button + board power latch
+│   │   ├── display_mgr.{h,cpp}   # SPD2010 LCD + LVGL init; heart animation wrapper
+│   │   └── (Display_SPD2010, LVGL_Driver, I2C_Driver, TCA9554PWR,
+│   │      Touch_SPD2010, esp_lcd_spd2010, ui/SquareLine files)
+│   │                             # Waveshare board SDK + SquareLine-exported UI assets
 │   ├── boards/
 │   │   ├── waveshare_esp32s3_touch_lcd_146b.json     # Current board
 │   │   └── waveshare_esp32s3_dualeye_touch_lcd_128.json  # DualEye (boards incoming)
@@ -93,15 +99,14 @@ GPIO 6, 7, and 8 are reserved by the board's power management hardware (power bu
 
 ## Dependencies
 
-The ESP-NOW build (`bear`) has **no external libraries** — everything ships inside the `espressif32` Arduino core.
+Both Touch LCD builds require external libraries. PlatformIO downloads them automatically on the first `pio run` — no manual install needed:
 
-The MQTT build (`bear-mqtt`) adds one library, downloaded automatically by PlatformIO:
+| Library | Used by | Version | Note |
+|---------|---------|---------|------|
+| `lvgl/lvgl` | `bear`, `bear-mqtt` | ^8.3.0 | ~80 MB download on first build; all subsequent builds work offline |
+| `knolleary/PubSubClient` | `bear-mqtt` only | ^2.8 | |
 
-| Library | Version |
-|---------|---------|
-| `knolleary/PubSubClient` | ^2.8 |
-
-Both builds share the same core APIs:
+Both builds also use these bundled APIs (no download needed):
 
 | Header | Source |
 |--------|--------|
@@ -109,7 +114,7 @@ Both builds share the same core APIs:
 | `WiFi.h` | ESP32 Arduino WiFi library (bundled with platform) |
 | LEDC / ADC / Touch | ESP32 Arduino peripheral drivers (bundled with platform) |
 
-The platform version is pinned in `platformio.ini`. PlatformIO downloads everything once on the first `pio run`; all subsequent builds work **fully offline** (ESP-NOW build only — MQTT requires internet at runtime).
+The platform version is pinned to `espressif32 @ 6.5.0` in `platformio.ini`. After the first build, the ESP-NOW build works fully offline. MQTT requires internet at runtime to reach the broker.
 
 ---
 
@@ -308,7 +313,7 @@ All three are enforced inside `actuators_update()`, called every `loop()`. Relea
 
 ### Hardware requirements
 
-- The heating pad must be rated **5 V / ≤500 mA**.
+- The SparkFun Heating Pad 5×10 cm is rated 5 V / ~750 mA (~6.5 Ω). Running it directly from LiPo (~3.7 V) draws ~570 mA — well within the SparkFun MOSFET board's 6.5 A rating. An optional boost converter (Adafruit MiniBoost #4654) raises this to 5.2 V / ~800 mA for more warmth at the cost of battery runtime. See `hardware/bom.md` for both wiring options.
 - Mount the TMP36 **against the heating pad surface**, not floating in stuffing — it needs to read pad temperature, not air temperature.
 - Use heat-resistant material between the heating pad and stuffing to prevent hot spots.
 - Never leave the bears unattended while charging.
