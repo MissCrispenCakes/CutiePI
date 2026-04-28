@@ -6,6 +6,7 @@
 #include "heartbeat.h"
 #include "actuators.h"
 #include "temp_sensor.h"
+#include "display_mgr.h"
 
 // ── Bear State Machine ────────────────────────────────────────────────────────
 enum BearState {
@@ -73,15 +74,16 @@ static void apply_state(BearState state) {
 }
 
 // ── Arduino Entry Points ──────────────────────────────────────────────────────
-// LCD backlight pin — used only for the boot flash below, not driven elsewhere.
-// GPIO5 is reserved by the board but safe to pulse briefly here.
+// GPIO5 is the LCD backlight pin. The 3-flash here is a low-level boot indicator
+// that fires before LVGL loads — if the display never shows the heart but you
+// see the flashes, the problem is in display_init(), not power_mgr_init().
 static constexpr uint8_t LCD_BL_PIN = 5;
 
 void setup() {
     power_mgr_init();  // first: latch board power on (GPIO7 HIGH)
 
-    // Boot indicator: flash the display backlight 3× so you can confirm
-    // the board is alive on battery without needing a serial monitor.
+    // Boot indicator: flash backlight 3× immediately after power latch.
+    // Proves the board is alive on battery before any complex init runs.
     pinMode(LCD_BL_PIN, OUTPUT);
     for (int i = 0; i < 3; i++) {
         digitalWrite(LCD_BL_PIN, HIGH); delay(200);
@@ -89,11 +91,13 @@ void setup() {
     }
 
     Serial.begin(115200);
-    delay(1500);
+    delay(500);
+
     sensors_init();
     heartbeat_init();
     actuators_init();
     temp_sensor_init();
+    display_init();    // LCD + LVGL + heart animation
     comms_init(on_remote_hug);
     Serial.printf("CutiePI Bear %d ready! Battery: %.2f V (%d%%)\n",
                   BEAR_ID, power_mgr_battery_volts(), power_mgr_battery_pct());
@@ -121,4 +125,5 @@ void loop() {
     heartbeat_update();
     actuators_update(temp_c);
     comms_update();
+    display_update();
 }
