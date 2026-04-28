@@ -6,24 +6,33 @@
 
 | Qty | Component | Notes |
 |-----|-----------|-------|
-| 1 | Waveshare ESP32-S3-Touch-LCD-1.46B | Main microcontroller (ESP32-S3R8: 16 MB flash, 8 MB PSRAM, 1.46" round display) |
-| 1 | Force-Sensitive Resistor (FSR 402 or similar) **with 2-pin JST-PH connector** | Hug detection; JST pins are the two FSR terminals — wire into voltage divider on the board |
-| 1 | Red LED (5 mm, ~2V Vf) **with 2-pin JST-PH connector** | Heartbeat glow; JST red → board-side 100 Ω resistor → GPIO13, JST black → GND |
-| 1 | 100 Ω resistor | Current limiter for LED (on the board, between GPIO13 and the LED JST red wire) |
-| 1 | Heating pad (5 V, ≤500 mA) **with 2-pin JST-PH connector** | Warmth; JST red → board 5V pin (see ⚠ note in wiring section), JST black → MOSFET drain |
-| 1 | TMP36 analog temperature sensor **with 2-pin JST-PH connector** | Heater temperature safety; VOUT wired directly to GPIO1 — no voltage divider needed |
-| 1 | N-channel MOSFET (e.g. 2N7000 or IRLZ44N) | Controls heater from 3.3 V GPIO |
-| 1 | 1 kΩ resistor | MOSFET gate resistor |
-| 1 | 1N4007 flyback diode | Across heater JST terminals on the board (cathode toward 5 V) |
+| 1 | Waveshare ESP32-S3-Touch-LCD-1.46B | Current test board (ESP32-S3R8: 16 MB flash, 8 MB PSRAM, 1.46" round display) |
+| 1 | Force-Sensitive Resistor (FSR 402 or similar) | Hug detection; wire into voltage divider — see wiring section |
+| 1 | Red LED (5 mm, ~2V Vf) | Heartbeat glow; 100 Ω series resistor → GPIO13 |
+| 1 | 100 Ω resistor | Current limiter for LED |
+| 1 | SparkFun Heating Pad 5×10 cm | Warmth; ~6.5 Ω, rated 5V/750mA (runs at LiPo voltage ~3.7V → ~570mA, ~2.1W); wire leads direct to MOSFET board output |
+| 1 | TMP36 analog temperature sensor | Heater temperature safety; VOUT wired directly to GPIO1 — no voltage divider needed |
+| 1 | SparkFun MOSFET Power Controller | Switches heater from GPIO12; FDS6630A (logic-level, 3.3V gate OK, 6.5A max); built-in gate resistor, flyback diode, and 10kΩ pull-down (heater stays off when GPIO floats) |
 | 1 | 10 kΩ resistor | FSR voltage divider pull-down |
-| 1 | LiPo battery (1S, 1000–2000 mAh) with JST-PH 2-pin connector | Portable power — plugs directly into the board's onboard battery port; no separate charger board needed. Charging is handled via USB-C on the board. |
-| — | 2-pin JST-PH connectors + crimps (or pre-crimped pigtails) | For LED, FSR, heater pad, and TMP36 |
+| 1 | LiPo battery (1S, 1500–2500 mAh) **with MX1.25 2-pin connector** | Portable power — plugs directly into the board's onboard MX1.25 battery port; no separate charger needed. Charging via USB-C on the board. |
+| 1 | MX1.25 Y-splitter cable (1× female → 2× male) | Splits LiPo between ESP32 battery port and MOSFET board power input |
+| — | JST-PH connectors + crimps (or pre-crimped pigtails) | For LED, FSR, and TMP36 wiring harness (not battery — battery uses MX1.25) |
 | — | Hookup wire, heat-shrink tubing, hot glue | Assembly |
+
+### Optional components
+
+| Qty | Component | Purpose |
+|-----|-----------|---------|
+| 1 | 5V boost converter module ≥1A out (e.g. MT3608) | Run heater at full rated 5V/750mA instead of LiPo voltage — more heat, shorter battery life |
+| 1 | 470 µF electrolytic capacitor | Across heater power branch — smooths inrush current when MOSFET switches on |
+| 1 | Inline polyfuse or fuse (750mA–1A) | Heater branch overcurrent protection |
+| — | Heat-resistant fabric pocket or insulating sheet | Between heating pad and stuffing — prevents hot spots |
 
 ## Wiring Summary
 
-All four external components (FSR, LED, heater pad, TMP36) connect via **2-pin JST-PH** (red = +/signal, black = GND).
-The voltage dividers, current-limiting resistor, and MOSFET circuit all live on the board/breadboard side of each connector.
+FSR, LED, and TMP36 connect via **2-pin JST-PH** (red = +/signal, black = GND).
+The heating pad connects directly to the SparkFun MOSFET board output — no JST connector on the pad side.
+The LiPo battery uses **MX1.25** (different pitch from JST-PH — do not mix up).
 
 ```
 ── Pressure sensor (FSR) ──────────────────────────────────────
@@ -48,25 +57,36 @@ GND   ──── TMP36 pin 3 (GND)
   Place the TMP36 against or inside the heating pad so it reads pad temperature.
   Sew/tape it in place so it can't shift during a hug.
 
-── Heating pad ────────────────────────────────────────────────
-GPIO12 ─── 1 kΩ ─── MOSFET gate
-                     MOSFET source ──────────────────── GND
-                     MOSFET drain  ─── [JST black]
-                     [JST red]     ─── 5 V pin (see ⚠ below)
-                     1N4007 flyback diode across JST pins on board
-                     (diode cathode toward 5 V / JST red)
+── Heating pad (via SparkFun MOSFET Power Controller) ─────────
+LiPo (+) ──→ MOSFET board VIN   (solder direct or via JST)
+LiPo (−) ──→ MOSFET board GND
 
-⚠ VERIFY THE 5V PIN BEFORE ASSEMBLING
-The board's external header has a 5V pin labelled "VBUS / VSYS".
-On USB power this is always 5V. On battery it may be dead if the pin is
-VBUS only (no onboard boost converter).
-Before soldering: plug in the LiPo with USB disconnected and measure the
-5V header pin with a multimeter.
-  - Reads ~5V → safe to use for the heater.
-  - Reads 0V  → the pin is VBUS only. Options:
-      (a) add a small 5V boost module (e.g. MT3608) between the battery
-          and the heater rail, or
-      (b) swap to a 3.3V-rated heating pad and wire it to the 3.3V pin.
+GPIO12   ──→ MOSFET board control +   (0.1" header or sewable pad)
+GND      ──→ MOSFET board control −   (0.1" header or sewable pad)
+
+MOSFET board OUT+ ──→ heating pad red wire
+MOSFET board OUT− ──→ heating pad black wire
+
+  The SparkFun board's built-in 10kΩ pull-down holds the gate LOW when
+  the ESP32 is off or GPIO12 is floating — heater cannot switch on
+  accidentally. Gate resistor and flyback diode are also built in.
+
+  The LiPo splits to the ESP32 and the MOSFET board via a MX1.25
+  Y-splitter cable. The heater is powered at battery voltage (~3.7V
+  nominal) rather than 5V, drawing ~570mA and producing ~2.1W of warmth.
+  The TMP36 safety cutoffs apply regardless of supply voltage.
+
+── Optional boost converter (for full-rated heater power) ─────
+LiPo (+) ──→ boost converter IN+
+LiPo (−) ──→ boost converter IN−
+Boost 5V out ──→ MOSFET board VIN   (replaces direct LiPo feed above)
+Boost GND    ──→ MOSFET board GND
+470µF cap across MOSFET board VIN/GND (smooths switching inrush)
+Polyfuse (750mA–1A) in series on the VIN line
+
+  With boost: heater runs at 5V/750mA/3.75W — full rated power.
+  Without boost: heater runs at ~3.7V/570mA/2.1W — still warm, longer
+  battery life.
 ```
 
 ## GPIO Pins Reserved by the Waveshare ESP32-S3-Touch-LCD-1.46B
@@ -168,7 +188,9 @@ The Waveshare board has an onboard battery circuit that the firmware must intera
 
 ### LiPo wiring
 
-Connect the LiPo **JST-PH 2-pin** connector directly to the board's onboard battery port. The board's built-in charge circuit handles charging via USB-C automatically — no separate charger board is needed.
+Connect the LiPo **MX1.25 2-pin** connector directly to the board's onboard battery port. The board's built-in charge circuit handles charging via USB-C automatically — no separate charger board is needed.
+
+The same LiPo also powers the SparkFun MOSFET board via a **MX1.25 Y-splitter cable** — one female end on the battery, two male ends: one to the ESP32 port, one to the MOSFET board VIN/GND.
 
 > ⚠ **Test JST polarity with a multimeter before plugging in — do not skip this.**
 > Many cheap LiPo batteries ship with the JST pins reversed. Plugging in backwards damages the board instantly.
@@ -205,18 +227,23 @@ Serial output via `pio device monitor` requires a USB connection (the board uses
 
 ### Battery capacity
 
-With a 1100 mAh 1S LiPo and a 5 V heating pad drawing ~500 mA:
-- Heating pad needs ~5 V at up to 500 mA; the board's boost converter (~87% efficient) draws ~800 mA from the 3.7 V cell when the heater is on.
-- In a typical mutual-hug session (heater on ~50% of the time via temperature cycling), current draw is roughly 450–500 mA total.
-- **Estimated runtime: ~2 hours** on a 1100 mAh cell, which is comfortable for testing.
+SparkFun heating pad resistance: ~6.5 Ω. ESP32 current draw: ~240 mA (WiFi active).
 
-For long-term daily use, a 2000 mAh cell doubles that to ~4 hours.
+| Config | Heater draw | Total (heater + ESP32) | Runtime on 1500 mAh (50% heater duty) |
+|--------|------------|------------------------|---------------------------------------|
+| No boost, 3.7 V nominal | ~570 mA | ~810 mA | ~2.8 h |
+| No boost, 4.2 V full charge | ~646 mA | ~886 mA | ~2.5 h |
+| With 5 V boost (~87% efficient) | ~750 mA load → ~1030 mA from cell | ~1270 mA | ~2.0 h |
+
+Temperature cycling (heater on ~50% of the time) roughly doubles runtime compared to continuous heating. A 2500 mAh cell adds another ~65% on top of those figures.
+
+**Recommendation:** 1500–2000 mAh cell without boost gives the best balance of warmth and runtime for testing.
 
 ---
 
 ## Safety Notes
 
-- The heating pad **must** be rated for 5 V / ≤500 mA.
+- The SparkFun heating pad is rated 5 V / ~750 mA (6.5 Ω). Running it at LiPo voltage (~3.7 V) draws ~570 mA and produces ~2.1 W — lower than rated but safe and warm enough for a bear. The TMP36 safety cutoffs apply regardless of supply voltage.
 - Mount the TMP36 **against the heating pad surface** so it reads pad temperature — not floating in stuffing where it can't detect hot spots.
 - The firmware uses three stacked safety layers: temperature hysteresis cycling (42 °C target), over-temperature hard cutoff (48 °C), and a session time cutoff (5 min). All are tunable in `config.h`. See the Safety section in the main README for details.
 - Use heat-resistant material between the heating pad and stuffing to prevent hot spots.

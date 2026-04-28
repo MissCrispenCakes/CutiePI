@@ -74,9 +74,9 @@ Quick overview per bear:
 - **Waveshare ESP32-S3-Touch-LCD-1.46B** — microcontroller (ESP32-S3R8, 16 MB flash, 8 MB PSRAM, 1.46" round display)
 - **FSR 402** (or similar) — force-sensitive resistor for hug detection
 - **Red LED** + 100 Ω resistor — heartbeat glow
-- **5 V flexible heating pad** (≤500 mA) + N-channel MOSFET — warmth
+- **SparkFun Heating Pad 5×10 cm** + SparkFun MOSFET Power Controller — warmth; heater powered directly from LiPo via MOSFET board (not from the ESP32 header)
 - **TMP36** analog temperature sensor — heater temperature safety
-- **LiPo battery** (1S, JST connector) — portable power, charges via the board's onboard USB-C circuit (no separate charger needed)
+- **LiPo battery** (1S, 1500–2500 mAh, MX1.25 connector) — portable power, charges via the board's onboard USB-C circuit; Y-splitter feeds both the ESP32 and the MOSFET board
 
 Default pin assignments (change in `config.h`):
 
